@@ -1,0 +1,24 @@
+name = "blackbox"
+compatibility_date = "2023-12-01"
+
+# [vars]
+# MY_VAR = "my-variable"
+
+[vars]
+DATABASE_URL = "prisma://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcGlfa2V5IjoiYTkyZjMzOWEtZTFhYi00M2I3LTgyYjItZmVkNjA4MWExMWJiIiwidGVuYW50X2lkIjoiMDE5YzhiOWIwODhmOTkyMTQ3ZDBiOGQ5YTA5OGI2MTM2MjI0ZDIyY2I2MGM0NmQ1YzM0MzM1YTk2YTFkMjU5MiIsImludGVybmFsX3NlY3JldCI6IjMzOGU5ZDQ0LTJmOTItNDA3NS1hZDAwLWI1ZWFhMjk1NzIxZiJ9.L2_oerXMlLYgVLQnknZ0XXmuhEzkbuHbcwdLtv5DqJ0"
+
+# [[kv_namespaces]]
+# binding = "MY_KV_NAMESPACE"
+# id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+# [[r2_buckets]]
+# binding = "MY_BUCKET"
+# bucket_name = "my-bucket"
+
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "my-database"
+# database_id = ""
+
+# [ai]
+# binding = "AI"
