@@ -6,7 +6,13 @@ const userRoute = new Hono<{
   Bindings: {
 		DATABASE_URL: string,
     JWT_SECRET: string
-	}}>()
+	},
+  Variables:{
+    userId: string,
+    name: string
+  }
+}>()
+
 
 userRoute.get('/signup', async(c) => {
   const prisma = new PrismaClient({
@@ -25,8 +31,8 @@ userRoute.get('/signup', async(c) => {
     })
     const payload = {
       userId: res.id,
-      name: res.name,
-      exp: Math.floor(Date.now() / 1000) + 60 * 60, // Token expires in 1 hour
+      name: res.name
+      // exp: Math.floor(Date.now() / 1000) + 60 * 60, // Token expires in 1 hour
     }
     const token = await sign(payload, secret)
     
@@ -52,18 +58,18 @@ userRoute.get('/login', async(c)=>{
       }
     });
     if(!res){
-      return c.json({message:"Isse while logging in"})
+      return c.json({message: "Check you credential"})
     }
     const payload = {
       userId: res.id,
-      name: res.name,
-      exp: Math.floor(Date.now() / 1000) + 60 * 60, // Token expires in 1 hour
+      name: res.name
+      // exp: Math.floor(Date.now() / 1000) + 60 * 60, // Token expires in 1 hour
     }
     const token = await sign(payload, secret)
     return c.json({message: "logged in", token: token})
   } catch (error) {
     console.log(error);
-    return c.json({message: "Cant log in"})
+    return c.json({message: " Issue while logging in"})
   }
 })
 
