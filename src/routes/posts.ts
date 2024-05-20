@@ -2,7 +2,6 @@ import { Hono } from 'hono'
 import { PrismaClient } from '@prisma/client/edge'
 import { withAccelerate } from '@prisma/extension-accelerate'
 import { decode, sign, verify } from 'hono/jwt'
-
 const postServer = new Hono<{
   Bindings: {
 		DATABASE_URL: string,
@@ -33,9 +32,54 @@ postServer.use('/*', async(c,next)=>{
   }
 })
 
+postServer.post('/create', async(c) => {
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env.DATABASE_URL,
+  }).$extends(withAccelerate())
 
-postServer.get('/create', (c) => {
-  const userId = c.get("userId")
-  return c.json(c.get("userId"))
+  const userId = c.get("userId");
+  const body = await c.req.json();
+  try {
+    const res = await prisma.post.create({
+      data:{
+        title: body.title,
+        content: body.content,
+        authorId : userId
+      }
+    });
+    console.log(res);
+    c.status(200)
+    return c.json({message:"post created"})
+  } catch (error) {
+    console.log(error);
+    c.status(411)
+    return c.json({message: "error whiel creating post"})
+  }
+})
+postServer.post('/publish', async(c)=>{
+  const postId = c.req.header('postId');
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env.DATABASE_URL,
+  }).$extends(withAccelerate())
+
+  const userId = c.get("userId");
+
+  try {
+    const res = await prisma.post.update({
+      where:{
+        id: postId,
+        authorId: userId
+      },
+      data:{
+        published: true
+      }
+    })
+    console.log(res);
+    
+    return c.json({message: "published"})
+  } catch (error) {
+    console.log(error);
+    return c.json({message: "error while publishing"})
+  }
 })
 export default postServer
