@@ -56,8 +56,39 @@ postServer.post('/create', async(c) => {
     return c.json({message: "error whiel creating post"})
   }
 })
-postServer.post('/publish', async(c)=>{
-  const postId = c.req.header('postId');
+
+postServer.put('/update/:id', async(c)=>{
+  const postId = c.req.param("id");
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env.DATABASE_URL,
+  }).$extends(withAccelerate())
+
+  const userId = c.get("userId");
+
+  const body = await c.req.json();
+  try {
+    const res = await prisma.post.update({
+      where:{
+        id: postId,
+        authorId: userId
+      },
+      data:{
+        title: body.title,
+        published: body.publish,
+        content: body.content
+      }
+    })
+    console.log(res);
+    
+    return c.json({message: "updated", newpost: res})
+  } catch (error) {
+    console.log(error);
+    return c.json({message: "error while updating"})
+  }
+
+})
+postServer.put('/publish/:id', async(c)=>{
+  const postId = c.req.param("id");
   const prisma = new PrismaClient({
     datasourceUrl: c.env.DATABASE_URL,
   }).$extends(withAccelerate())
@@ -80,6 +111,29 @@ postServer.post('/publish', async(c)=>{
   } catch (error) {
     console.log(error);
     return c.json({message: "error while publishing"})
+  }
+})
+postServer.delete("/delete/:id", async(c)=>{
+  const postId = c.req.param("id");
+
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env.DATABASE_URL,
+  }).$extends(withAccelerate())
+
+  const userId = c.get("userId");
+  try {
+    const res = prisma.post.delete({
+      where:{
+        id: postId,
+        authorId: userId
+      }
+    })
+    return c.json({meassage: "post deleted", res: res})
+  } catch (error) {
+    console.log(error);
+    c.status(411)
+    return c.json({message: "error while deleting"});
+    
   }
 })
 export default postServer
