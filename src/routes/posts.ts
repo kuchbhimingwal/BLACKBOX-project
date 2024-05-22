@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { PrismaClient } from '@prisma/client/edge'
 import { withAccelerate } from '@prisma/extension-accelerate'
 import { decode, sign, verify } from 'hono/jwt'
+import { PostsSchema , PostUpdateSchema } from "@kuchbhimingwal/blackbox-zod"
 const postServer = new Hono<{
   Bindings: {
 		DATABASE_URL: string,
@@ -39,6 +40,11 @@ postServer.post('/create', async(c) => {
 
   const userId = c.get("userId");
   const body = await c.req.json();
+  const { success } = PostsSchema.safeParse(body);
+  if(!success){
+    c.status(411)
+    return c.json({message:"invalid input"})
+  }
   try {
     const res = await prisma.post.create({
       data:{
@@ -66,6 +72,11 @@ postServer.put('/update/:id', async(c)=>{
   const userId = c.get("userId");
 
   const body = await c.req.json();
+  const { success } = PostUpdateSchema.safeParse(body);
+  if(!success){
+    c.status(411)
+    return c.json({message:"invalid input"})
+  }
   try {
     const res = await prisma.post.update({
       where:{

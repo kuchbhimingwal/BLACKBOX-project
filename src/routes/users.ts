@@ -2,6 +2,9 @@ import { Hono } from 'hono'
 import { PrismaClient } from '@prisma/client/edge'
 import { withAccelerate } from '@prisma/extension-accelerate'
 import { decode, sign, verify } from 'hono/jwt'
+
+import { UserSchema , LogginSchema } from "@kuchbhimingwal/blackbox-zod"
+
 const userRoute = new Hono<{
   Bindings: {
 		DATABASE_URL: string,
@@ -21,6 +24,12 @@ userRoute.get('/signup', async(c) => {
 
   const body = await c.req.json();
   const secret = c.env.JWT_SECRET;
+
+  const { success } = UserSchema.safeParse(body);
+  if(!success){
+    c.status(411)
+    return c.json({message:"invalid creadentials"})
+  }
   try {
     const res = await prisma.user.create({
       data:{
@@ -50,6 +59,11 @@ userRoute.get('/login', async(c)=>{
 
   const body = await c.req.json();
   const secret = c.env.JWT_SECRET;
+  const { success } = LogginSchema.safeParse(body);
+  if(!success){
+    c.status(411)
+    return c.json({message:"invalid creadentials"})
+  }
   try {
     const res = await prisma.user.findUnique({
       where:{
