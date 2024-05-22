@@ -122,7 +122,7 @@ postServer.delete("/delete/:id", async(c)=>{
 
   const userId = c.get("userId");
   try {
-    const res = prisma.post.delete({
+    const res = await prisma.post.delete({
       where:{
         id: postId,
         authorId: userId
@@ -133,6 +133,41 @@ postServer.delete("/delete/:id", async(c)=>{
     console.log(error);
     c.status(411)
     return c.json({message: "error while deleting"});
+    
+  }
+})
+
+postServer.get("/bulk", async(c)=>{
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env.DATABASE_URL,
+  }).$extends(withAccelerate())
+
+  try {
+    const posts = await prisma.post.findMany()
+    return c.json({posts})
+  } catch (error) {
+    console.log(error);
+    return c.json({message: "error while getting a the posts"})
+    
+  }
+})
+
+postServer.get("/uniquepost/:id", async(c)=>{
+  const postId = c.req.param("id");
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env.DATABASE_URL,
+  }).$extends(withAccelerate())
+
+  try {
+    const res = await prisma.post.findUnique({
+      where:{
+        id: postId
+      }
+    })
+    return c.json({res})
+  } catch (error) {
+    console.log(error);
+    return c.json({message: "error while getting the post"})
     
   }
 })
