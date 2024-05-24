@@ -17,7 +17,7 @@ const userRoute = new Hono<{
 }>()
 
 
-userRoute.get('/signup', async(c) => {
+userRoute.post('/signup', async(c) => {
   const prisma = new PrismaClient({
     datasourceUrl: c.env.DATABASE_URL,
   }).$extends(withAccelerate())
@@ -31,6 +31,17 @@ userRoute.get('/signup', async(c) => {
     return c.json({message:"invalid creadentials"})
   }
   try {
+    
+    const userCheck = await prisma.user.findUnique({
+      where:{
+        email: body.email,
+        password: body.password
+      }
+    });
+    if(userCheck){
+      c.status(401);
+      return c.json({message: "user already exists"})
+    }
     const res = await prisma.user.create({
       data:{
         name: body.name,
@@ -48,11 +59,12 @@ userRoute.get('/signup', async(c) => {
     return c.json({token: token, message: "Siggen up"})
   } catch (error) {
     console.log(error);
-    return c.json({message: "error while logging in!!"})
+    c.status(401)
+    return c.json({message: "error while sign up!!"})
   }
 })
 
-userRoute.get('/login', async(c)=>{
+userRoute.post('/login', async(c)=>{
   const prisma = new PrismaClient({
     datasourceUrl: c.env.DATABASE_URL,
   }).$extends(withAccelerate())
@@ -72,6 +84,7 @@ userRoute.get('/login', async(c)=>{
       }
     });
     if(!res){
+      c.status(401)
       return c.json({message: "Check you credential"})
     }
     const payload = {
@@ -83,6 +96,7 @@ userRoute.get('/login', async(c)=>{
     return c.json({message: "logged in", token: token})
   } catch (error) {
     console.log(error);
+    c.status(401)
     return c.json({message: " Issue while logging in"})
   }
 })

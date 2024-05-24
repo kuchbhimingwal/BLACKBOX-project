@@ -154,7 +154,11 @@ postServer.get("/bulk", async(c)=>{
   }).$extends(withAccelerate())
 
   try {
-    const posts = await prisma.post.findMany()
+    const posts = await prisma.post.findMany({
+      include: {
+        author: true,
+      },
+    })
     return c.json({posts})
   } catch (error) {
     console.log(error);
