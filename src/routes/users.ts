@@ -100,5 +100,4 @@ userRoute.post('/login', async(c)=>{
     return c.json({message: " Issue while logging in"})
   }
 })
-
 export default userRoute

@@ -18,6 +18,7 @@ postServer.use('/*', async(c,next)=>{
   const authHeader = c.req.header('Authorization');
   const secret = c.env.JWT_SECRET;
   if(!authHeader){
+    c.status(401)
     return c.json({message: "undefinde jason web token"})
   }
   const jwt = authHeader.split(" ")[1]
@@ -28,11 +29,30 @@ postServer.use('/*', async(c,next)=>{
     await next();
   } catch (error) {
     console.log(error);
-    c.status(411)
+    c.status(401)
     return c.json({message: "not a verified user"})
   }
 })
+postServer.get('/profile', async(c)=>{
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env.DATABASE_URL,
+  }).$extends(withAccelerate())
 
+  const userId = c.get("userId");
+
+  try {
+    const res = await prisma.user.findUnique({
+      where: {
+        id: userId
+      }
+    });
+    c.status(200);
+    return c.json({res})
+  } catch (error) {
+    c.status(411);
+    return c.json({message: "error while getting the user data"})
+  }
+})
 postServer.post('/create', async(c) => {
   const prisma = new PrismaClient({
     datasourceUrl: c.env.DATABASE_URL,
@@ -57,7 +77,6 @@ postServer.post('/create', async(c) => {
     c.status(200)
     return c.json({message:"post created"})
   } catch (error) {
-    console.log(error);
     c.status(411)
     return c.json({message: "error whiel creating post"})
   }
@@ -93,7 +112,7 @@ postServer.put('/update/:id', async(c)=>{
     
     return c.json({message: "updated", newpost: res})
   } catch (error) {
-    console.log(error);
+    c.status(411)
     return c.json({message: "error while updating"})
   }
 
@@ -120,7 +139,7 @@ postServer.put('/publish/:id', async(c)=>{
     
     return c.json({message: "published"})
   } catch (error) {
-    console.log(error);
+    c.status(411)
     return c.json({message: "error while publishing"})
   }
 })
@@ -162,6 +181,7 @@ postServer.get("/bulk", async(c)=>{
     return c.json({posts})
   } catch (error) {
     console.log(error);
+    c.status(411)
     return c.json({message: "error while getting a the posts"})
     
   }
@@ -182,8 +202,8 @@ postServer.get("/uniquepost/:id", async(c)=>{
     return c.json({res})
   } catch (error) {
     console.log(error);
+    c.status(411)
     return c.json({message: "error while getting the post"})
-    
   }
 })
 export default postServer
