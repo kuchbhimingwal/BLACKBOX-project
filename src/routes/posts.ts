@@ -206,4 +206,26 @@ postServer.get("/uniquepost/:id", async(c)=>{
     return c.json({message: "error while getting the post"})
   }
 })
+
+postServer.get("/myposts", async(c)=>{
+  const userId = c.get("userId");
+
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env.DATABASE_URL,
+  }).$extends(withAccelerate())
+
+  try {
+    const posts = await prisma.post.findMany({
+      where: {
+        authorId: userId,
+      },
+    })
+    return c.json({posts})
+  } catch (error) {
+    console.log(error);
+    c.status(411)
+    return c.json({message: "error while getting a the posts"})
+    
+  }
+})
 export default postServer
